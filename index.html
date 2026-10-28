@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Шаман — Я русский / Россия, мама</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    background:radial-gradient(circle at center,#1a1a2e 0%,#0f0f1e 100%);
+    color:#fff;
+    text-align:center;
+    padding:2rem;
+  }
+  h1{
+    font-size:clamp(1.5rem,5vw,2.5rem);
+    margin-bottom:.5rem;
+    background:linear-gradient(90deg,#fff,#ffd700,#fff);
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+    text-shadow:0 0 30px rgba(255,215,0,.3);
+  }
+  p.hint{color:#aaa;margin-bottom:2rem;font-size:1rem}
+  .shaman{
+    width:280px;
+    height:280px;
+    border-radius:50%;
+    cursor:pointer;
+    object-fit:cover;
+    border:5px solid #ffd700;
+    box-shadow:0 0 40px rgba(255,215,0,.5),0 0 80px rgba(255,215,0,.2);
+    transition:transform .2s,box-shadow .3s;
+    user-select:none;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .shaman:hover{
+    transform:scale(1.05);
+    box-shadow:0 0 60px rgba(255,215,0,.8),0 0 120px rgba(255,215,0,.4);
+  }
+  .shaman:active{transform:scale(.95)}
+  .shaman.playing{animation:pulse 1.2s infinite ease-in-out}
+  @keyframes pulse{
+    0%,100%{box-shadow:0 0 40px rgba(255,215,0,.5),0 0 80px rgba(255,215,0,.2)}
+    50%{box-shadow:0 0 80px rgba(255,215,0,1),0 0 160px rgba(255,215,0,.6)}
+  }
+  .status{
+    margin-top:2rem;
+    font-size:1.1rem;
+    color:#ffd700;
+    min-height:1.5em;
+    font-weight:500;
+  }
+</style>
+</head>
+<body>
+
+  <h1>ШАМАН</h1>
+  <p class="hint">Нажми на шамана — услышишь «Я русский» или «Россия, мама»</p>
+
+  <img src="shaman.jpg" alt="Шаман" class="shaman" id="shaman">
+  <div class="status" id="status"></div>
+
+  <audio id="song1" src="ya-russkiy.mp3" preload="auto"></audio>
+  <audio id="song2" src="rossiya-mama.mp3" preload="auto"></audio>
+
+<script>
+  const shaman = document.getElementById('shaman');
+  const status = document.getElementById('status');
+  const songs = [
+    { el: document.getElementById('song1'), title: '🎵 Я русский…' },
+    { el: document.getElementById('song2'), title: '🎵 Россия, мама…' }
+  ];
+
+  let current = null;
+
+  // Включаем максимальную громкость для обеих песен
+  songs.forEach(s => {
+    s.el.volume = 1.0; 
+  });
+
+  function stopAll() {
+    songs.forEach(s => {
+      s.el.pause();
+      s.el.currentTime = 0;
+    });
+    shaman.classList.remove('playing');
+    status.textContent = '';
+    current = null;
+  }
+
+  shaman.addEventListener('click', () => {
+    if (current) {
+      stopAll();
+      return;
+    }
+
+    const pick = songs[Math.floor(Math.random() * songs.length)];
+
+    pick.el.play()
+      .then(() => {
+        current = pick;
+        shaman.classList.add('playing');
+        status.textContent = pick.title;
+      })
+      .catch(err => {
+        status.textContent = '⚠️ Не удалось воспроизвести. Проверь mp3-файлы';
+        console.error(err);
+      });
+
+    pick.el.addEventListener('ended', stopAll, { once: true });
+  });
+</script>
+
+</body>
+</html>
